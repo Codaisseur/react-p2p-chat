@@ -38,9 +38,11 @@ const link = createElement(
   }, // props
   'Hello, React!' // Children
 )
+const heading = createElement('h1', {}, "It's all just elements")
+const root = createElement('div', {}, heading, link)
 
 const container = document.getElementById('app-container')
 render(
-  link,     // The element
-  container // Where to render it - see next slide
+  root,     // Look out! It have changed.
+  container
 )
