@@ -26,3 +26,21 @@ p2.on('data', (data) => {
 })
 p2.on('error', (error) => console.error('p2 error', error))
 p2.on('close', () => console.log('p2 connection closed'))
+
+import React, { createElement } from 'react'
+import { render } from 'react-dom'
+
+const link = createElement(
+  'a', // type
+  {
+    href: 'https://facebook.github.io/react/',
+    title: 'Read the docs'
+  }, // props
+  'Hello, React!' // Children
+)
+
+const container = document.getElementById('app-container')
+render(
+  link,     // The element
+  container // Where to render it - see next slide
+)

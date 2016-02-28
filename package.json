@@ -18,6 +18,8 @@
     "watchify": "^3.7.0"
   },
   "dependencies": {
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7",
     "simple-peer": "^6.0.2"
   }
 }
