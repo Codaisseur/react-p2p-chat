@@ -20,12 +20,32 @@ const ConnectForm = () => (
   </div>
 )
 
+let message_input = ''
+const MessageForm = () => (
+  <div>
+    <input
+      ref = { (el) => message_input = el }
+      placeholder = 'Enter something nice here...'
+    />
+    <button
+      onClick = { () => {
+        const message = message_input.value
+        update('< ' + message)
+        p1.send(message)
+      } }
+    >
+      Send
+    </button>
+  </div>
+)
+
 const Root = (props) => (
   <div>
     <ConnectForm />
     {
       props.messages.map((message) => <p>{ message }</p>)
     }
+    <MessageForm />
   </div>
 )
 
@@ -49,7 +69,6 @@ p1.on('signal', (data) => {
 p1.on('connect', () => {
   console.log('p1 connected')
   update('connected')
-  p1.send('Hello, p2. How are you?')
 })
 p1.on('data', (data) => {
   const message = data.toString('utf-8')
