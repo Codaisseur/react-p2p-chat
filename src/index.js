@@ -2,16 +2,32 @@ import Peer from 'simple-peer'
 import React, { createElement } from 'react'
 import { render } from 'react-dom'
 
-const Root = (props) => {
-  return (
-    <div>
-      <h1>Hello</h1>
-      {
-        props.messages.map((message) => <p>{ message }</p>)
-      }
-    </div>
-  )
-}
+const p1 = Peer({trickle: false, initiator: true})
+const p2 = Peer({trickle: false})
+
+let signal_input = ''
+const ConnectForm = () => (
+  <div>
+    <input
+      ref = { (el) => signal_input = el }
+      placeholder = 'Enter signaling data here...'
+    />
+    <button
+      onClick = { () => p2.signal(signal_input.value) }
+    >
+      Connect
+    </button>
+  </div>
+)
+
+const Root = (props) => (
+  <div>
+    <ConnectForm />
+    {
+      props.messages.map((message) => <p>{ message }</p>)
+    }
+  </div>
+)
 
 const container = document.getElementById('app-container')
 
@@ -25,14 +41,10 @@ const update = (message) => {
   )
 }
 
-const p1 = Peer({trickle: false, initiator: true})
-const p2 = Peer({trickle: false})
-
 p1.on('signal', (data) => {
   console.log('p1 signal', data)
   update('signal')
   update(JSON.stringify(data))
-  p2.signal(data)
 })
 p1.on('connect', () => {
   console.log('p1 connected')
