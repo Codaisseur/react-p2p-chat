@@ -41,20 +41,22 @@ const MessageForm = () => (
 
 const Root = (props) => (
   <div>
-    <ConnectForm />
+    { !props.connected ? <ConnectForm /> : "" }
     {
       props.messages.map((message) => <p>{ message }</p>)
     }
-    <MessageForm />
+    { props.connected ? <MessageForm /> : "" }
   </div>
 )
 
 const container = document.getElementById('app-container')
 
+let connected = false
 let messages = []
 const update = (message) => {
   messages = messages.concat(message)
-  const root = createElement(Root, { messages })
+  if (message === 'connected') { connected = true }
+  const root = createElement(Root, { messages, connected })
   render(
     root,
     container
