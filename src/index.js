@@ -30,16 +30,17 @@ p2.on('close', () => console.log('p2 connection closed'))
 import React, { createElement } from 'react'
 import { render } from 'react-dom'
 
-const link = createElement(
-  'a', // type
-  {
-    href: 'https://facebook.github.io/react/',
-    title: 'Read the docs'
-  }, // props
-  'Hello, React!' // Children
+const root = (
+  <div>
+    <h1>It's all elements</h1>
+    <a
+      title = 'Read the docs'
+      href = 'https://facebook.github.io/react/'
+    >
+      Hello, React!
+    </a>
+  </div>
 )
-const heading = createElement('h1', {}, "It's all just elements")
-const root = createElement('div', {}, heading, link)
 
 const container = document.getElementById('app-container')
 render(
