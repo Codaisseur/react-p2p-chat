@@ -1,0 +1,5 @@
+node_modules/
+build/
+npm-debug.log
+*.sublime-workspace
+.DS_Store
