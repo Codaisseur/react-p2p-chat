@@ -1,14 +1,19 @@
----
-
 title   : Reactive P2P Chat
 author  :
   name    : Tadeusz Łazurski
-  twitter : @lazurski
+  twitter : lazurski
   github  : lzrski
 
 ---
 
+# P2P Chat
+## Powered by React.js, Simple Peer and love
+
+---
+
 ### Set up new project
+
+In your terminals execute:
 
 ```bash
 mkdir p2p-chat
@@ -21,9 +26,9 @@ Just press enter for every question.
 
 ---
 
-# .gitignore
+### .gitignore
 
-Make sure build artifacts won't clutter your source control. Put this in your `.gitignore` file:
+Make sure build artifacts won't clutter your source control. Put this in the `.gitignore` file:
 
 ```
 node_modules/
@@ -46,7 +51,7 @@ npm install --save-dev \
   babel-preset-es2015
 ```
 
-...and commit changes
+Then commit changes:
 
 ```
 git add --all .
@@ -59,7 +64,7 @@ git commit -m 'Install development dependencies'
 
 ### Bootstrap some code
 
-Make some new files:
+Make two new files:
 
 `index.html`
 
@@ -84,7 +89,7 @@ console.log("Hello, there. Let's chat!")
 
 ---
 
-### Transform and bundle our file
+### Transform and bundle our script
 
 ```bash
 mkdir -p build
@@ -94,7 +99,7 @@ mkdir -p build
   src/index.js
 ```
 
-You should have a file called `build/application.js` with weird looking code. It's a bundle. Not that we reference it in our html file.
+You should have a file called `build/application.js` with weird looking code. It's a bundle. Note that we reference it in `index.html` file.
 
 ---
 
@@ -134,7 +139,7 @@ npm run build
 
 ---
 
-Avoid manual recompilation every time we save a file by adding `develop` script with `watchify` command and `--debug` option for source maps:
+Avoid manual recompilation every time we save a file by adding `develop` script with `watchify` command and `debug` option for source maps:
 
 ```json
 "scripts": {
@@ -244,7 +249,7 @@ p1.on('connect', () => {
 })
 ```
 
-And let p2 respond with in a friendly manner:
+And let `p2` respond with in a friendly manner:
 
 ```javascript
 p1.on('data', (data) => {
@@ -253,15 +258,17 @@ p1.on('data', (data) => {
 })
 ```
 
-Do you see the numbers in the console? Looks like some robot speech, not friendly at all.
+Do you see the numbers in the console? Looks like some robot speech. Not friendly at all!
 
 ---
 
 That's because whatever is sent is converted to a thing called buffer. Fortunately it's quite easy to convert it back to a string:
 
-```
+```javascript
 p1.on('data', (data) => {
   console.log('p1 received', data.toString('utf-8'))
+  // ...
+}
 ```
 
 How about a commit?
@@ -270,11 +277,15 @@ How about a commit?
 
 ### Time for React
 
-Before we separate the pears we should add some UI. We will use `facebook/react` for this. It separated in two modules:
+Before we separate the pears we should add some UI. We will use `facebook/react` for this. It comes in two modules:
 
 ```bash
 npm install --save react react-dom
 ```
+
+---
+
+![Theory warning](../brace-your-selves.jpeg)
 
 ---
 
@@ -284,11 +295,11 @@ In browsers, there is an API called DOM: Document Object Model. What you see on 
 
 ---
 
-The DOM API is rather terrible - interacting with it is slow and cumbersome.  However if you want browser to display anything it's the only way other then giving your browser entire new HTML *file*.
+The DOM API is rather terrible - interacting with it is slow and cumbersome.  However if you want browser to display something new it's the only way other then giving your browser entire new HTML *file*.
 
 Same for processing user interactions like clicking a button or filling a form. Without DOM API you can only send it to the server, process it there and send back new HTML.
 
-That is called `full page refresh cycle` and until recently it was the only way of building web apps.
+That is called **full page refresh cycle** and until recently it was the only way of building web apps.
 
 ---
 
@@ -305,6 +316,10 @@ Other then that we use a different API called **Virtual DOM**. It's similar, but
 Just as DOM, Virtual DOM deals mainly with `elements`.
 
 Each element has a type, like `div`, `a`, `p` etc. It also has a thing called `props` (which can affect the behavior of an element just like attributes you define in HTML). It can also have children - text or other elements.
+
+---
+
+![Almost done](../almost-done.jpeg)
 
 ---
 
@@ -434,30 +449,18 @@ p1.on('connect', () => {
   update('connected')
   p1.send('Hello, p2. How are you?')
 })
-```
 
----
-
-```javascript
 p1.on('data', (data) => {
   const message = data.toString('utf-8')
   update('> ' + message)
   console.log('p1 received', message)
 })
-```
 
----
-
-```javascript
 p1.on('error', (error) => {
   update('!!! ' + error.message)
   console.error('p1 error', error)
 })
-```
 
----
-
-```javascript
 p1.on('close', () => {
   update('Connection closed')
   console.log('p1 connection closed')
@@ -470,7 +473,7 @@ p1.on('close', () => {
 
 We update UI by rendering entire tree. To let this happen we need a function that will return different tree depending on it's arguments. Let's call it `Root` (with capital **R**):
 
-```javascript
+```html
 const Root = (props) => {
   return (
     <div>
@@ -487,15 +490,15 @@ const Root = (props) => {
 
 Note how we jump from `JSX` to `JavaScript` syntax using curly braces (`{}`).
 
-```javascript
+```
 const Root = (props) => {
-  return ( // Here it's still JavaScript
-    <div> // and here it is JSX
+  return (              <-- Here it's still JavaScript
+    <div>               <-- and here it is JSX
       <h1>Hello</h1>
-      { // and JavaScript again!
+      {                 <-- and JavaScript again!
         props.messages.map((message) => <p>{ message }</p>)
-      }
-    </div>
+      }                                 ^  ^
+    </div>                         JSX -'  '--- JavaScript
   )
 }
 ```
@@ -518,11 +521,15 @@ const update = (message) => {
 
 ---
 
+### Stateless components
+
 Note that we have used `Root` function as a `type` argument to `createElement`, just as we have been doing with 'div', 'a', and 'h1' before. You can do that!
 
 This kind of function is called *stateless component* and it is often used in React development. We will use this approach later.
 
 ---
+
+### Stateless components
 
 To make it work you have to honor a following deal: it will return single element (in our case it's an element of type 'div'):
 
@@ -535,6 +542,8 @@ return (
 ```
 
 ---
+
+### Stateless components
 
 The `props` passed to `createElement` will be passed to your function as first argument. You can use them in your function to change what will get rendered or how it will behave. In our case we render the messages based on the props:
 
@@ -838,13 +847,15 @@ Commit.
 
 ### Time to banish p2 from our memory
 
-It's no fun talking to ourselves, especially when all we ever answer to ourselves is:
+It's no fun talking to this robot, especially when all it ever answer is:
 
 > Fine, thanks. How about you p1?
 
 Instead of keeping second peer in the same process we will connect to another instance of this app and talk to it.
 
 ---
+
+### Connect function
 
 First let's make a `connect` function. It will take a signaling data and pass it to `p1`. As with `initiate` we need to make it visible in `ConnectForm`.
 
@@ -856,6 +867,8 @@ const ConnectForm = () => ( ... )
 ```
 
 ---
+
+### Connect function
 
 Then inside `ConnectForm`, instead of calling `p2.signal`, let's call this new function:
 
@@ -869,9 +882,13 @@ Then inside `ConnectForm`, instead of calling `p2.signal`, let's call this new f
 
 ---
 
-And now time to define the `connect` function. First of all, we do not know if the `p1` is already instantiated. We may have it because `initiate` was called before (in which case `p1` in the initiator of the connection), or maybe we have received a signal from external initiator and need to set up `p1` to accept the signal.
+### Connect function
+
+And now time to define the `connect` function. First of all, we do not know if the `p1` is already instantiated. We may have it because `initiate` was called before (in which case `p1` in the initiator of the connection), or maybe we have received a signal from external peer and need to set up `p1` to accept the signal.
 
 ---
+
+### Connect function
 
 We need to check if `p1` is `null` (i.e. it does not exist yet)) in which case we create it and set it's `signal` event handler.
 
@@ -892,11 +909,15 @@ connect = (data) => {
 
 ---
 
+### Connect function
+
 Consider that we only need to set up rest of the events (i.e. `connect`, `message`, `error`, `close`) if the `p1` received a signal from external peer. Otherwise there is no chance for this events to be triggered.
 
 Let's just move those statements from `initiate` to `connect`.
 
 ---
+
+### Connect function
 
 ```javascript
 connect = (data) => {
@@ -916,6 +937,8 @@ connect = (data) => {
 ```
 
 ---
+
+### Connect function
 
 Finally, remove all references to `p2`. We don't need it anymore.
 
@@ -937,7 +960,7 @@ Open `index.html` in a new browser window, place it next to the first one and tr
 
 ### Did it?
 
-If everything went fine, you can now chat with yourself in two different browser windows. How cool is that :)
+If everything went fine, you can now chat with yourself in two different browser windows. How cool is that!
 
 Time for **level 2** - AKA **multiplayer arcade game**. Try to connect to the person sitting next to you.
 
@@ -951,6 +974,11 @@ You have made your own peer to peer chat with about 100 LOC.
 
 ---
 
+# Where to go from here
+## Ideas for further improvements
+
+---
+
 ### Where to go from here
 
 * Improve UX
@@ -959,11 +987,21 @@ You have made your own peer to peer chat with about 100 LOC.
 
   Styling? Check out [inline styles](https://facebook.github.io/react/tips/inline-styles.html) and [Radium](http://stack.formidable.com/radium/)
 
+---
+
+### Where to go from here
+
 * Refactor the spaghetti code
 
   Avoid reassigning the variables (always use `const`).
 
   > TIP: modularize and use [Redux][] to manage state
+
+[Redux]: http://redux.js.org/
+
+---
+
+### Where to go from here
 
 * Enable cross network communication
 
@@ -973,11 +1011,18 @@ You have made your own peer to peer chat with about 100 LOC.
 
   > TIP: If you set `trickle` to `true` you will have to exchange multiple signals before peers connect.
 
+---
+
+### Where to go from here
+
 * Automate signaling data exchange
 
   > TIP: Probably easiest way is to use [Firebase][].
 
-* Connect to multiple peers
-
-[Redux]: http://redux.js.org/
 [Firebase]: https://www.firebase.com/
+
+---
+
+### Where to go from here
+
+* Connect to multiple peers
