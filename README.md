@@ -920,3 +920,64 @@ connect = (data) => {
 Finally, remove all references to `p2`. We don't need it anymore.
 
 Also, since naming things is important, rename `p1` to `peer`.
+
+---
+
+### Let's play!
+
+Open `index.html` in a new browser window, place it next to the first one and try to connect. It's an **arcade game** - you have about 30 seconds to accomplish this steps in correct order:
+
+1. Click `initiate` in one window.
+2. Copy signaling data to input in the second window and click `answer`.
+3. Copy signaling data from second window to input in the first one.
+4. Click `answer`...
+5. Done!
+
+---
+
+### Did it?
+
+If everything went fine, you can now chat with yourself in two different browser windows. How cool is that :)
+
+Time for **level 2** - AKA **multiplayer arcade game**. Try to connect to the person sitting next to you.
+
+> TIP: Use slack to exchange signaling data.
+
+---
+
+### Congratulations!
+
+You have made your own peer to peer chat with about 100 LOC.
+
+---
+
+### Where to go from here
+
+* Improve UX
+
+  Enter to send? Read about [keyboard events in React](https://facebook.github.io/react/docs/events.html#keyboard-events)
+
+  Styling? Check out [inline styles](https://facebook.github.io/react/tips/inline-styles.html) and [Radium](http://stack.formidable.com/radium/)
+
+* Refactor the spaghetti code
+
+  Avoid reassigning the variables (always use `const`).
+
+  > TIP: modularize and use [Redux][] to manage state
+
+* Enable cross network communication
+
+  Sad fact: with this implementation you will likely be unable to connect to anybody on the Internet. It will only work on the same local network :(
+
+  That's because we have set `trickle` option to false.
+
+  > TIP: If you set `trickle` to `true` you will have to exchange multiple signals before peers connect.
+
+* Automate signaling data exchange
+
+  > TIP: Probably easiest way is to use [Firebase][].
+
+* Connect to multiple peers
+
+[Redux]: http://redux.js.org/
+[Firebase]: https://www.firebase.com/
