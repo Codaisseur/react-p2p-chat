@@ -914,3 +914,9 @@ connect = (data) => {
   })
 }
 ```
+
+---
+
+Finally, remove all references to `p2`. We don't need it anymore.
+
+Also, since naming things is important, rename `p1` to `peer`.

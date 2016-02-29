@@ -2,7 +2,7 @@ import Peer from 'simple-peer'
 import React, { createElement } from 'react'
 import { render } from 'react-dom'
 
-let p1 = null
+let peer = null
 
 let initiate = null // This is an ugly hack!
 let connect = null
@@ -38,7 +38,7 @@ const MessageForm = () => (
       onClick = { () => {
         const message = message_input.value
         update('< ' + message)
-        p1.send(message)
+        peer.send(message)
       } }
     >
       Send
@@ -73,41 +73,41 @@ update('')
 
 // Because our app is a spaghetti mess, we had to declare a variable above and assign it here. Shame.
 initiate = () => {
-  p1 = Peer({trickle: false, initiator: true})
+  peer = Peer({trickle: false, initiator: true})
 
-  p1.on('signal', (data) => {
-    console.log('p1 signal', data)
+  peer.on('signal', (data) => {
+    console.log('peer signal', data)
     update('signal')
     update(JSON.stringify(data))
   })
 }
 
 connect = (data) => {
-  if (p1 === null) {
-    p1 = Peer({trickle: false})
-    p1.on('signal', (data) => {
-      console.log('p1 signal', data)
+  if (peer === null) {
+    peer = Peer({trickle: false})
+    peer.on('signal', (data) => {
+      console.log('peer signal', data)
       update('signal')
       update(JSON.stringify(data))
     })
   }
-  p1.signal(data)
+  peer.signal(data)
 
-  p1.on('connect', () => {
-    console.log('p1 connected')
+  peer.on('connect', () => {
+    console.log('peer connected')
     update('connected')
   })
-  p1.on('data', (data) => {
+  peer.on('data', (data) => {
     const message = data.toString('utf-8')
     update('> ' + message)
-    console.log('p1 received', message)
+    console.log('peer received', message)
   })
-  p1.on('error', (error) => {
+  peer.on('error', (error) => {
     update('!!! ' + error.message)
-    console.error('p1 error', error)
+    console.error('peer error', error)
   })
-  p1.on('close', () => {
+  peer.on('close', () => {
     update('Connection closed')
-    console.log('p1 connection closed')
+    console.log('peer connection closed')
   })
 }
