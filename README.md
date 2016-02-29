@@ -569,7 +569,7 @@ p1.on('signal', (data) => {
 And create a new component for supplying the signaling data to `p2`:
 
 ```javascript
-let signal_input = ''
+let signal_input = null
 const ConnectForm = () => (
   <div>
     <input
@@ -792,8 +792,8 @@ For now we will use a little dirty hack. Note that the `initiate` function is no
 So we don't actually need it to do anything yet, only to be visible. Let's define the variable before, but instantiate it later:
 
 ```javascript
-let initiate
-let signal_input = ''
+let initiate = null
+let signal_input = null
 const ConnectForm = () => (
   // ...
 )
@@ -811,13 +811,13 @@ This is how **closures** work.
 
 ### HELP! Everything disappeared and I don't see my the button now!
 
-That's because we only call `render` inside `update`, and we only call `update` when the `p1` gets some events. But now the `p1` doesn't even exist until we click a button, and the button doesn't exist until we `p1` and it gets events.
+That's because we only call `render` inside `update`, and we only call `update` when the `p1` gets some events. But now the `p1` doesn't even exist until we click a button, and the button doesn't exist until we render it.
 
 This starts to smell like a spaghetti.
 
 ---
 
-For now let's just call the `update` once right after we start. It expects a string, so let's give it an empty one:
+For now let's just make another quick and dirty hack and call the `update` once right after we start. It expects a string, so let's give it an empty one:
 
 ```javascript
 const update = (message) => {
@@ -826,9 +826,9 @@ const update = (message) => {
 update('')
 ```
 
-Now it should work again.
-
 ---
+
+Now it should work again.
 
 Try pressing `initiate`, then copy signaling data to the input and press `connect`. Then you should be able to chat with `p2`.
 
@@ -836,66 +836,81 @@ Commit.
 
 ---
 
-> TODO:
-> * React UI for connecting peers
-> * Inter-browser communication
+### Time to banish p2 from our memory
+
+It's no fun talking to ourselves, especially when all we ever answer to ourselves is:
+
+> Fine, thanks. How about you p1?
+
+Instead of keeping second peer in the same process we will connect to another instance of this app and talk to it.
 
 ---
 
-### Components
-
-We can create our own element types:
+First let's make a `connect` function. It will take a signaling data and pass it to `p1`. As with `initiate` we need to make it visible in `ConnectForm`.
 
 ```javascript
-const App = () => createElement 'div', {}, 'Hello.'
+let initiate = null // This is an ugly hack!
+let connect = null
+let signal_input = null
+const ConnectForm = () => ( ... )
 ```
 
 ---
 
-There are two types of components:
+Then inside `ConnectForm`, instead of calling `p2.signal`, let's call this new function:
 
-* stateless:
-
-  ```javascript
-  MyComponent = (props) => //
-  ```
-
-* stateful (not covered today)
----
-
-
-### Discover a bug!
-
-Event handlers attached twice.
+```javascript
+<button
+  onClick = { () => connect(signal_input.value) }
+>
+  Answer
+</button>
+```
 
 ---
 
-### Fix the bug
-
-![brace-your-selves.jpeg](brace-your-selves.jpeg)
-
-> TODO: Fix the bug: keep the state in check
-> Multiple steps
+And now time to define the `connect` function. First of all, we do not know if the `p1` is already instantiated. We may have it because `initiate` was called before (in which case `p1` in the initiator of the connection), or maybe we have received a signal from external initiator and need to set up `p1` to accept the signal.
 
 ---
 
-### Enable ICE Tricles
+We need to check if `p1` is `null` (i.e. it does not exist yet)) in which case we create it and set it's `signal` event handler.
 
-Now there are multiple signal events emitted: one for offer / answer and several describing possible strategies for NAT traversals (candidates).
+```javascript
+connect = (data) => {
+  if (p1 === null) {
+    p1 = Peer({trickle: false})
+    p1.on('signal', (data) => {
+      console.log('p1 signal', data)
+      update('signal')
+      update(JSON.stringify(data))
+    })
+  }
+}
+```
 
-To establish connection all of those need to be exchanged between peers in correct order and within limited time (~30 s).
+> TIP: You can copy and paste the body of if statement from `initiate`. Just remove the initiator: true part.
 
-Try that :)
+---
 
-> TODO:
-> Make signal property of the state an array
-> On signal event push signaling data to the array
-> Make connect function accept an array and call `peer.signal` once for every item.
+Consider that we only need to set up rest of the events (i.e. `connect`, `message`, `error`, `close`) if the `p1` received a signal from external peer. Otherwise there is no chance for this events to be triggered.
 
-Try that by hand - still quite difficult.
+Let's just move those statements from `initiate` to `connect`.
 
-That's why in so called real life we would use some kind of signaling server - a simple tool to exchange the signals.
+---
 
-> TODO:
-> * Multiple peers?
-> * Game?
+```javascript
+connect = (data) => {
+  // ... if statement
+  p1.signal(data)
+
+  p1.on('connect', () => {
+    console.log('p1 connected')
+    update('connected')
+  })
+  // ...message and error handlers
+  p1.on('close', () => {
+    update('Connection closed')
+    console.log('p1 connection closed')
+  })
+}
+```

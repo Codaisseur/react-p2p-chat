@@ -3,10 +3,10 @@ import React, { createElement } from 'react'
 import { render } from 'react-dom'
 
 let p1 = null
-const p2 = Peer({trickle: false})
 
 let initiate = null // This is an ugly hack!
-let signal_input = ''
+let connect = null
+let signal_input = null
 const ConnectForm = () => (
   <div>
     <input
@@ -14,7 +14,7 @@ const ConnectForm = () => (
       placeholder = 'Enter signaling data here...'
     />
     <button
-      onClick = { () => p2.signal(signal_input.value) }
+      onClick = { () => connect(signal_input.value) }
     >
       Answer
     </button>
@@ -50,7 +50,7 @@ const Root = (props) => (
   <div>
     { !props.connected ? <ConnectForm /> : "" }
     {
-      props.messages.map((message) => <p>{ message }</p>)
+      props.messages.map((message) => <pre>{ message }</pre>)
     }
     { props.connected ? <MessageForm /> : "" }
   </div>
@@ -80,6 +80,19 @@ initiate = () => {
     update('signal')
     update(JSON.stringify(data))
   })
+}
+
+connect = (data) => {
+  if (p1 === null) {
+    p1 = Peer({trickle: false})
+    p1.on('signal', (data) => {
+      console.log('p1 signal', data)
+      update('signal')
+      update(JSON.stringify(data))
+    })
+  }
+  p1.signal(data)
+
   p1.on('connect', () => {
     console.log('p1 connected')
     update('connected')
@@ -98,15 +111,3 @@ initiate = () => {
     console.log('p1 connection closed')
   })
 }
-
-p2.on('signal', (data) => {
-  console.log('p2 signal', data)
-  p1.signal(data)
-})
-p2.on('connect', () => console.log('p2 connected'))
-p2.on('data', (data) => {
-  console.log('p2 received', data.toString('utf-8'))
-  p2.send('Fine, thanks. How about you p1?')
-})
-p2.on('error', (error) => console.error('p2 error', error))
-p2.on('close', () => console.log('p2 connection closed'))
