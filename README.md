@@ -691,6 +691,137 @@ const Root = (props) => (
 ```
 
 > NOTE: What you see are ternary operators (`x ? y : z`)
+> I think they are ugly and confusing, but that's the best you can get in JS.
+
+---
+
+### Wait for the user to initiate a connection
+
+Right now the initiator peer is created right away. Because after a separation of peers we wont know if the one in our instance should initiate the session or wait for signal, we need to provide user a mean to initiate only if she thinks it's appropriate.
+
+---
+
+We need a button and a function. First a button in a ConnectForm component:
+
+```html
+const ConnectForm = () => (
+  <div>
+    <input
+      ref = { (el) => signal_input = el }
+      placeholder = 'Enter signaling data here...'
+    />
+    <button
+      onClick = { () => p2.signal(signal_input.value) }
+    >
+      Answer
+    </button>
+
+    <button
+      onClick = { () => initiate() }
+    >
+      Initiate
+    </button>
+
+  </div>
+)
+```
+
+---
+
+Then a function. Let's call it initiate. This is a **little tricky**. Basically it wraps the creation of `p1` peer:
+
+```javascript
+initiate = () => {
+  p1 = Peer({trickle: false, initiator: true})
+
+  p1.on('signal', (data) => {
+    console.log('p1 signal', data)
+    update('signal')
+    update(JSON.stringify(data))
+  })
+
+  // ...
+
+  p1.on('close', () => {
+    update('Connection closed')
+    console.log('p1 connection closed')
+  })
+}
+```
+
+---
+
+Since it needs to have access to `update` function, we need to define it after the definition of `update`.
+
+```javascript
+const update = (message) => {
+  // ...
+}
+initiate = () => {
+  // ...
+}
+```
+
+---
+
+But we call this new `initiate` function inside the `ConnectForm` component, which in turn is called from `Root` component, which in turn is called by `update` function.
+
+```
+update -> Root -> ConnectForm -> initiate
+  ^                                 |
+  '---------------------------------'
+```
+
+This is called a circular reference and often poses a difficult problem to solve in software development.
+
+---
+
+For now we will use a little dirty hack. Note that the `initiate` function is not called immediately when the `ConnectForm` is called, but only when user presses a button (i.e. asynchronously).
+
+So we don't actually need it to do anything yet, only to be visible. Let's define the variable before, but instantiate it later:
+
+```javascript
+let initiate
+let signal_input = ''
+const ConnectForm = () => (
+  // ...
+)
+```
+
+---
+
+That way we have a reference to `initiate` inside the `ConnectForm`, and by the time the user clicks a button, it will already become a function.
+
+This is how **closures** work.
+
+> NOTE: But it's not how they should be used. It's a temporary hack, not a best practice.
+
+---
+
+### HELP! Everything disappeared and I don't see my the button now!
+
+That's because we only call `render` inside `update`, and we only call `update` when the `p1` gets some events. But now the `p1` doesn't even exist until we click a button, and the button doesn't exist until we `p1` and it gets events.
+
+This starts to smell like a spaghetti.
+
+---
+
+For now let's just call the `update` once right after we start. It expects a string, so let's give it an empty one:
+
+```javascript
+const update = (message) => {
+  // ...
+}
+update('')
+```
+
+Now it should work again.
+
+---
+
+Try pressing `initiate`, then copy signaling data to the input and press `connect`. Then you should be able to chat with `p2`.
+
+Commit.
 
 ---
 
