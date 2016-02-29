@@ -701,7 +701,18 @@ Right now the initiator peer is created right away. Because after a separation o
 
 ---
 
-We need a button and a function. First a button in a ConnectForm component:
+First let's not initiate new `p1` on startup anymore:
+
+```javascript
+let p1 = null
+const p2 = Peer({trickle: false})
+```
+
+Note that we have changed `const` to `let`. That's because the value of `p1` won't be constant anymore. We will change it soon.
+
+---
+
+Now we need a button and a function. First a button in a ConnectForm component:
 
 ```html
 const ConnectForm = () => (
@@ -728,7 +739,7 @@ const ConnectForm = () => (
 
 ---
 
-Then a function. Let's call it initiate. This is a **little tricky**. Basically it wraps the creation of `p1` peer:
+Then a function. Let's call it initiate. This is a **little tricky**. Basically it wraps the creation and setup of `p1` peer:
 
 ```javascript
 initiate = () => {
@@ -740,7 +751,7 @@ initiate = () => {
     update(JSON.stringify(data))
   })
 
-  // ...
+  // other event handlers...
 
   p1.on('close', () => {
     update('Connection closed')
@@ -751,7 +762,7 @@ initiate = () => {
 
 ---
 
-Since it needs to have access to `update` function, we need to define it after the definition of `update`.
+Now the tricky part. Since it needs to have access to `update` function, we need to define it after the definition of `update`.
 
 ```javascript
 const update = (message) => {
