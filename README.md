@@ -4,6 +4,8 @@ author  :
   twitter : lazurski
   github  : lzrski
 style   : cleaver-theme/style.css
+theme   : cleaver-theme
+
 ---
 
 # P2P Chat
@@ -254,7 +256,7 @@ And let `p2` respond with in a friendly manner:
 ```javascript
 p1.on('data', (data) => {
   console.log('p1 received', data)
-  p2.send(data+1)
+  p2.send('Fine, thanks. How about you p1?')
 })
 ```
 
